@@ -24,7 +24,7 @@ export async function up(queryInterface) {
       description: "Phòng Deluxe rộng rãi, có ban công",
       price: 1900000,
       stock: 5,
-      image_url: '/uploads/img/phong-1.jpg',
+      image_url: JSON.stringify(["/uploads/img/phong-1.jpg"]),
       city_id: cities[0].id,
       user_id: users[0].id,
       category_id: categories[0].id,
@@ -38,7 +38,7 @@ export async function up(queryInterface) {
       description: "Phòng VIP sang trọng, có phòng tắm riêng cao cấp",
       price: 2000000,
       stock: 10,
-      image_url: '/uploads/img/phong-2.jpg',
+      image_url: JSON.stringify(["/uploads/img/phong-2.jpg"]),
       city_id: cities[1].id,
       user_id: users[1].id,
       category_id: categories[1].id,
@@ -52,7 +52,7 @@ export async function up(queryInterface) {
       description: "Phòng Superior thoáng mát, có cửa sổ lớn, giường đôi",
       price: 1800000,
       stock: 10,
-      image_url: '/uploads/img/phong-3.png',
+      image_url: JSON.stringify(["/uploads/img/phong-3.png"]),
       city_id: cities[1].id,
       user_id: users[1].id,
       category_id: categories[1].id,
@@ -66,7 +66,7 @@ export async function up(queryInterface) {
       description: "Phòng Standard đơn giản, sạch sẽ",
       price: 1500000,
       stock: 10,
-      image_url: '/uploads/img/phong-4.jpg',
+      image_url: JSON.stringify(["/uploads/img/phong-4.jpg"]),
       city_id: cities[1].id,
       user_id: users[1].id,
       category_id: categories[1].id,
@@ -80,7 +80,7 @@ export async function up(queryInterface) {
       description: "Phòng Single nhỏ gọn, dành cho 1 người, view núi",
       price: 1300000,
       stock: 10,
-      image_url: '/uploads/img/phong-6.jpg',
+      image_url: JSON.stringify(["/uploads/img/phong-6.jpg"]),
       city_id: cities[1].id,
       user_id: users[1].id,
       category_id: categories[1].id,
@@ -95,19 +95,13 @@ export async function up(queryInterface) {
       description: "Phù hợp đi với gia đình",
       price: 1000000,
       stock: 10,
-      image_url: '/uploads/img/phong-5.jpg',
+      image_url: JSON.stringify(["/uploads/img/phong-5.jpg"]),
       city_id: cities[1].id,
       user_id: users[1].id,
       category_id: categories[1].id,
       createdAt: now,
       updatedAt: now,
     },
-
-
-
-
-
-
 
 
 

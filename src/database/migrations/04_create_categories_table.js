@@ -1,3 +1,4 @@
+// database/migrations/04_create_categories_table.js
 export async function up(queryInterface, Sequelize) {
   await queryInterface.createTable("categories", {
     id: {
@@ -9,7 +10,12 @@ export async function up(queryInterface, Sequelize) {
     name: {
       type: Sequelize.STRING(100),
       allowNull: false,
-      unique: true
+      unique: true,
+    },
+    image_url: {
+      type: Sequelize.JSON,
+      allowNull: false,
+      defaultValue: []
     },
     createdAt: {
       type: Sequelize.DATE,

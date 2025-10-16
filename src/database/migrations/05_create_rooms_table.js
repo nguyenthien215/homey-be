@@ -23,9 +23,11 @@ export async function up(queryInterface, Sequelize) {
       allowNull: false,
       defaultValue: 1,
     },
+
     image_url: {
-      type: Sequelize.STRING(255),
-      allowNull: true,
+      type: Sequelize.JSON,
+      allowNull: false,
+      defaultValue: [],
     },
     city_id: {
       type: Sequelize.UUID,

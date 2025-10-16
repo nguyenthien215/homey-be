@@ -1,41 +1,41 @@
-// import db from "../database/models/index.js";
-
-// export default class RoomController {
-//     async getAll(req, res) {
-//         try {
-//             const rooms = await db.Room.findAll();
-//             res.json(rooms);
-//         } catch (error) {
-//             console.error("Lỗi getAll rooms:", error);
-//             res.status(500).json({ message: "Lỗi server" });
-//         }
-//     }
-
-//     async getById(req, res) {
-//         try {
-//             const { id } = req.params;
-//             const room = await db.Room.findByPk(id);
-//             if (!room) {
-//                 return res.status(404).json({ message: "Không tìm thấy phòng" });
-//             }
-//             res.json(room);
-//         } catch (error) {
-//             console.error("Lỗi getById room:", error);
-//             res.status(500).json({ message: "Lỗi server" });
-//         }
-//     }
-// }
-
-
 // src/controllers/room.controller.js
-import db from "../database/models/index.js"; // Sequelize models
+import RoomService from "../services/room.service.js";
+
+const roomService = new RoomService();
 
 export const getAllRooms = async (req, res) => {
     try {
-        const rooms = await db.Room.findAll(); // lấy tất cả phòng
-        res.json(rooms);
+        const result = await roomService.getAllRooms(req);
+        res.status(200).json(result);
     } catch (error) {
-        console.error("Lỗi lấy danh sách phòng:", error);
-        res.status(500).json({ message: "Lỗi server" });
+        console.error("Error fetching rooms:", error);
+        res.status(500).json({ message: "Error fetching rooms: " + error.message });
+    }
+};
+
+export const getRoomsByCategory = async (req, res) => {
+    try {
+        const result = await roomService.getRoomsByCategory(req.params.categoryId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getRoomById = async (req, res) => {
+    try {
+        const result = await roomService.getRoomById(req.params.id);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getRoomDetailById = async (req, res) => {
+    try {
+        const result = await roomService.getRoomDetailById(req.params.id);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

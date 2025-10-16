@@ -1,3 +1,4 @@
+// src/database/models/rooms.model.js
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
@@ -15,6 +16,12 @@ export default (sequelize) => {
                 foreignKey: "room_id",
                 as: "promotions",
             });
+
+            Room.hasOne(models.RoomDetail, {
+                foreignKey: "room_id",
+                as: "detail",
+                onDelete: "CASCADE",
+            });
         }
     }
 
@@ -25,7 +32,20 @@ export default (sequelize) => {
             description: { type: DataTypes.STRING(255), allowNull: false },
             price: { type: DataTypes.FLOAT, allowNull: false },
             stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
-            image_url: { type: DataTypes.STRING(255), allowNull: true },
+            image_url: { type: DataTypes.JSON, allowNull: false, defaultValue: [] },
+
+
+            // thêm field category_id để ánh xạ FK tới categories.id (UUID)
+            category_id: {
+                type: DataTypes.UUID,
+                allowNull: true, // hoặc false nếu bạn bắt buộc phải có category
+                references: {
+                    model: "categories",
+                    key: "id",
+                },
+                onDelete: "SET NULL",
+                onUpdate: "CASCADE",
+            },
         },
         { sequelize, modelName: "Room", tableName: "rooms", timestamps: true }
     );
