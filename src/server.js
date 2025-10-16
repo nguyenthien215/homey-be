@@ -31,7 +31,10 @@ app.use(
 //  Cấu hình CORS (cho phép FE gọi API có cookie/token)
 app.use(
   cors({
-    origin: ["http://localhost:5173"], // FE của bạn
+    origin: ["http://localhost:5173",
+      "https://homey-oaqp.vercel.app"
+    ], // FE của bạn
+
     credentials: true,
   })
 );
