@@ -1,19 +1,20 @@
-
 import CategoryService from "../services/category.service.js";
 import BaseController from "./base.controller.js";
 
 class CategoryController extends BaseController {
   constructor() {
     super();
+
     this.service = new CategoryService();
   }
 
+
   async getAllCategories(req, res) {
     try {
-      const categories = await categoryService.getAllCategories(req);
+      const categories = await this.service.getAllCategories(req);
       res.status(200).json(categories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error("❌ Error fetching categories:", error);
       res.status(500).json({ message: "Error fetching categories" });
     }
   }
@@ -24,7 +25,7 @@ class CategoryController extends BaseController {
       const category = await this.service.getCategoryById(id);
       res.json(category);
     } catch (error) {
-      console.error("Error fetching category:", error);
+      console.error("❌ Error fetching category:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   }
@@ -35,7 +36,7 @@ class CategoryController extends BaseController {
       await this.service.createCategory(data);
       return res.status(200).json({ status: true });
     } catch (error) {
-      console.error("Error creating category:", error);
+      console.error("❌ Error creating category:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   }
@@ -47,7 +48,7 @@ class CategoryController extends BaseController {
       await this.service.editCategory(id, data);
       return res.status(200).json({ status: true });
     } catch (error) {
-      console.error("Error creating category:", error);
+      console.error("❌ Error editing category:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   }
@@ -58,7 +59,7 @@ class CategoryController extends BaseController {
       await this.service.deleteCategory(id);
       return res.status(200).json({ status: true });
     } catch (error) {
-      console.error("Error dalete category:", error);
+      console.error("❌ Error deleting category:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   }
