@@ -1,48 +1,39 @@
+// src/services/room.service.js
 import RoomRepository from "../repositories/room.repository.js";
 
 class RoomService {
     constructor() {
-        this.repository = new RoomRepository();
+        this.roomRepository = new RoomRepository();
     }
 
     async getAllRooms(req) {
-        try {
-            return await this.repository.getAllRooms(req);
-        } catch (error) {
-            throw new Error("Error fetching rooms: " + error.message);
-        }
+        return await this.roomRepository.getAllRooms(req);
     }
-    // async getCategoryById(id) {
-    //   try {
-    //     return await this.repository.getCategoryById(id);
-    //   } catch (error) {
-    //     throw new Error("Error fetching category: " + error.message);
-    //   }
-    // }
 
-    // async createCategory(data) {
-    //   try {
-    //     return await this.repository.createCategory(data);
-    //   } catch (error) {
-    //     throw new Error("Error creating product: " + error.message);
-    //   }
-    // }
+    async getRoomById(id) {
+        return await this.roomRepository.getRoomById(id);
+    }
 
-    // async editCategory(id, data) {
-    //   try {
-    //     return await this.repository.editCategory(id, data);
-    //   } catch (error) {
-    //     throw new Error("Error updating category: " + error.message);
-    //   }
-    // }
+    // ✅ THÊM HÀM NÀY (bắt buộc)
+    async getRoomDetailById(id) {
+        return await this.roomRepository.getRoomDetailById(id);
+    }
 
-    // async deleteCategory(id) {
-    //   try {
-    //     return await this.repository.deleteCategory(id);
-    //   } catch (error) {
-    //     throw new Error("Error deleting category: " + error.message);
-    //   }
-    // }
+    async getRoomsByCategory(categoryId) {
+        throw new Error("getRoomsByCategory chưa được triển khai trong RoomRepository");
+    }
+
+    async createRoom(data) {
+        return await this.roomRepository.createRoom(data);
+    }
+
+    async editRoom(id, data) {
+        return await this.roomRepository.editRoom(id, data);
+    }
+
+    async deleteRoom(id) {
+        return await this.roomRepository.deleteRoom(id);
+    }
 }
 
 export default RoomService;

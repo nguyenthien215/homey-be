@@ -63,37 +63,37 @@ class UserRepository {
     }
   }
 
-  //   async getUserById(id, includeRefreshToken = false) {
-  //     try {
-  //       return await (includeRefreshToken
-  //         ? this.model.findByPk(id, { include: db.RefreshToken })
-  //         : db.sequelize.query("SELECT * from users WHERE id = $id", {
-  //             bind: { id },
-  //             type: QueryTypes.SELECT,
-  //           }));
-  //     } catch (error) {
-  //       throw new Error("Error fetching user: " + error.message);
-  //     }
-  //   }
+  async getUserById(id, includeRefreshToken = false) {
+    try {
+      return await (includeRefreshToken
+        ? this.model.findByPk(id, { include: db.RefreshToken })
+        : db.sequelize.query("SELECT * from users WHERE id = $id", {
+          bind: { id },
+          type: QueryTypes.SELECT,
+        }));
+    } catch (error) {
+      throw new Error("Error fetching user: " + error.message);
+    }
+  }
 
-  //   async createUser(userData) {
-  //     try {
-  //       return await db.sequelize.query(
-  //         "INSERT INTO users (id, name, email, passwordHash) VALUES (:id, :name, :email, :passwordHash)",
-  //         {
-  //           replacements: {
-  //             id: uuidv4(),
-  //             name: userData.name,
-  //             email: userData.email,
-  //             passwordHash: userData.passwordHash,
-  //           },
-  //           type: QueryTypes.INSERT,
-  //         }
-  //       );
-  //     } catch (error) {
-  //       throw new Error("Error creating user: " + error.message);
-  //     }
-  //   }
+  async createUser(userData) {
+    try {
+      return await db.sequelize.query(
+        "INSERT INTO users (id, userName, email, password) VALUES (:id, :name, :email, :password)",
+        {
+          replacements: {
+            id: uuidv4(),
+            name: userData.name,
+            email: userData.email,
+            password: userData.password,
+          },
+          type: QueryTypes.INSERT,
+        }
+      );
+    } catch (error) {
+      throw new Error("Error creating user: " + error.message);
+    }
+  }
 
   //   async updateUser(id, data, updateRefreshToken = false) {
   //     const { refreshToken: token, ...userData } = data;

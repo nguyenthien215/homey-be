@@ -1,10 +1,15 @@
-// database/models/roomDetail.js
+// src/database/models/room_detail.model.js
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
     class RoomDetail extends Model {
         static associate(models) {
-            RoomDetail.belongsTo(models.Room, { foreignKey: "room_id", as: "room" });
+            // Chi tiết phòng thuộc về một phòng
+            RoomDetail.belongsTo(models.Room, {
+                foreignKey: "room_id",
+                as: "room", // alias này phải trùng trong repository
+                onDelete: "CASCADE",
+            });
         }
     }
 

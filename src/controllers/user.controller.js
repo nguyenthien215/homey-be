@@ -17,27 +17,27 @@ class UserController extends BaseController {
     }
   }
 
-  // async getUserById(req, res) {
-  //   try {
-  //     const { id } = req.params;
-  //     const user = await this.service.getUserById(id);
-  //     res.json(user);
-  //   } catch (error) {
-  //     console.error("Error fetching users:", error);
-  //     return res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
+  async getUserById(req, res) {
+    try {
+      const { id } = req.params;
+      const user = await this.service.getUserById(id);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 
-  // async createUser(req, res) {
-  //   try {
-  //     const userData = req.body;
-  //     await this.service.createUser(userData);
-  //     return res.status(200).json({ status: true });
-  //   } catch (error) {
-  //     console.error("Error creating user:", error);
-  //     return res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
+  async createUser(req, res) {
+    try {
+      const userData = req.body;
+      await this.service.createUser(userData);
+      return res.status(200).json({ status: true });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 
   // async updateUser(req, res) {
   //   try {

@@ -33,7 +33,7 @@ app.use(
   cors({
     origin: ["http://localhost:5173",
       "https://homey-oaqp.vercel.app"
-    ], // FE của bạn
+    ],
 
     credentials: true,
   })
@@ -89,6 +89,7 @@ io.on("connection", (socket) => {
 });
 
 // ===================== DATABASE =====================
+// ===================== DATABASE =====================
 db.sequelize
   .sync({ alter: false })
   .then(() => {
@@ -97,6 +98,11 @@ db.sequelize
   .catch((err) => {
     console.error("❌ Database synchronization error:", err);
   });
+
+// ===================== DEFAULT ROUTE =====================
+app.get("/", (req, res) => {
+  res.send("✅ Homey Backend is running successfully on Render!");
+});
 
 // ===================== SERVER START =====================
 server.listen(port, () => {
@@ -107,3 +113,4 @@ server.listen(port, () => {
 process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught Exception:", err);
 });
+

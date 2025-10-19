@@ -12,7 +12,7 @@ export async function up(queryInterface) {
             {
                 id: uuidv4(),
                 name: "Hotel",
-                image_url: JSON.stringify(["/uploads/img/hotel.jpg"]),
+                image_url: JSON.stringify(["https://demo-be-hhq0.onrender.com/uploads/img/hotel.jpg"]),
                 createdAt: now,
                 updatedAt: now,
             },
@@ -20,7 +20,7 @@ export async function up(queryInterface) {
             {
                 id: uuidv4(),
                 name: "Homestay",
-                image_url: JSON.stringify(["/uploads/img/homestay.jpg"]),
+                image_url: JSON.stringify(["https://demo-be-hhq0.onrender.com/uploads/img/homestay.jpg"]),
 
                 createdAt: now,
                 updatedAt: now,
@@ -28,7 +28,7 @@ export async function up(queryInterface) {
             {
                 id: uuidv4(),
                 name: "Resort",
-                image_url: JSON.stringify(["/uploads/img/resort.webp"]),
+                image_url: JSON.stringify(["https://demo-be-hhq0.onrender.com/uploads/img/resort.webp"]),
 
                 createdAt: now,
                 updatedAt: now,
