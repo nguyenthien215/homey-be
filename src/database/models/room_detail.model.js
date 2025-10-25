@@ -1,13 +1,12 @@
-// src/database/models/room_detail.model.js
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
     class RoomDetail extends Model {
         static associate(models) {
-            // Chi tiết phòng thuộc về một phòng
+            // Mỗi bản ghi chi tiết thuộc về 1 phòng
             RoomDetail.belongsTo(models.Room, {
                 foreignKey: "room_id",
-                as: "room", // alias này phải trùng trong repository
+                as: "room", // ✅ alias phải là "room"
                 onDelete: "CASCADE",
             });
         }
@@ -23,7 +22,12 @@ export default (sequelize) => {
             images: { type: DataTypes.JSON, allowNull: true },
             rating: { type: DataTypes.FLOAT, defaultValue: 0 },
         },
-        { sequelize, modelName: "RoomDetail", tableName: "room_details", timestamps: true }
+        {
+            sequelize,
+            modelName: "RoomDetail",
+            tableName: "room_details",
+            timestamps: true,
+        }
     );
 
     return RoomDetail;

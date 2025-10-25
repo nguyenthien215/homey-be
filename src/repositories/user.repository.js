@@ -33,21 +33,27 @@ class UserRepository {
       // Lấy danh sách user
       const rows = await db.sequelize.query(
         `
-          SELECT id, userName, password, email, phone, createdAt, updatedAt
-          FROM users
-          WHERE userName LIKE $search
-          ORDER BY ${sortField} ${sortOrder}
-          LIMIT $limit OFFSET $offset
-        `,
+  SELECT 
+    u.id,
+    u.userName,
+    u.email,
+    u.phone,
+    u.role_id,
+    r.name AS roleName,
+    u.createdAt,
+    u.updatedAt
+  FROM users u
+  LEFT JOIN roles r ON u.role_id = r.id
+  WHERE u.userName LIKE :search
+  ORDER BY ${sortField} ${sortOrder}
+  LIMIT ${limit} OFFSET ${offset}
+  `,
         {
-          bind: {
-            limit,
-            offset,
-            search: `%${search}%`,
-          },
+          replacements: { search: `%${search}%` },
           type: QueryTypes.SELECT,
         }
       );
+
 
       return {
         data: rows,
@@ -63,6 +69,46 @@ class UserRepository {
     }
   }
 
+  async createUser(data) {
+    try {
+      const id = uuidv4(); // id user mới
+
+      // Lấy roleId từ database
+      const role = await db.Role.findOne({ where: { name: data.role } });
+      if (!role) throw new Error(`Role "${data.role}" does not exist`);
+      const roleId = role.id;
+
+      const result = await db.sequelize.query(
+        `INSERT INTO users (id, userName, email, password, phone, role_id, createdAt, updatedAt)
+       VALUES (:id, :userName, :email, :password, :phone, :roleId, NOW(), NOW())`,
+        {
+          replacements: {
+            id,
+            userName: data.userName,
+            email: data.email,
+            password: data.password, // sau này hash bằng bcrypt
+            phone: data.phone || null,
+            roleId,
+          },
+          type: QueryTypes.INSERT,
+        }
+      );
+
+      return {
+        id,
+        userName: data.userName,
+        email: data.email,
+        phone: data.phone || null,
+        role_id: roleId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    } catch (error) {
+      throw new Error("Error creating user: " + error.message);
+    }
+  }
+
+
   async getUserById(id, includeRefreshToken = false) {
     try {
       return await (includeRefreshToken
@@ -76,70 +122,54 @@ class UserRepository {
     }
   }
 
-  async createUser(userData) {
+
+
+  async updateUser(id, data, updateRefreshToken = false) {
+    const { refreshToken: token, ...userData } = data;
     try {
-      return await db.sequelize.query(
-        "INSERT INTO users (id, userName, email, password) VALUES (:id, :name, :email, :password)",
-        {
-          replacements: {
-            id: uuidv4(),
-            name: userData.name,
-            email: userData.email,
-            password: userData.password,
-          },
-          type: QueryTypes.INSERT,
-        }
-      );
+      const user = await this.getUserById(id, updateRefreshToken);
+      if (!user) throw new Error("User not found");
+
+      if (updateRefreshToken) {
+        await this._updateOrCreateRefreshToken(user, token);
+        return user;
+      } else {
+        const result = await db.sequelize.query(
+          `UPDATE users
+  SET userName=:userName, email=:email, password=:password, phone=:phone
+  WHERE id=:id`,
+          {
+            replacements: {
+              id,
+              name: userData.name,
+              email: userData.email,
+              password: "",
+              phone: userData.phone,
+            },
+            type: QueryTypes.UPDATE,
+          }
+        );
+        return result;
+      }
     } catch (error) {
-      throw new Error("Error creating user: " + error.message);
+      throw new Error("Error updating user: " + error.message);
     }
   }
 
-  //   async updateUser(id, data, updateRefreshToken = false) {
-  //     const { refreshToken: token, ...userData } = data;
-  //     try {
-  //       const user = await this.getUserById(id, updateRefreshToken);
-  //       if (!user) throw new Error("User not found");
-
-  //       if (updateRefreshToken) {
-  //         await this._updateOrCreateRefreshToken(user, token);
-  //         return user;
-  //       } else {
-  //         const result = await db.sequelize.query(
-  //           `UPDATE users
-  // SET name=:name, email=:email, passwordHash=:passwordHash
-  // WHERE id=:id`,
-  //           {
-  //             replacements: {
-  //               id,
-  //               name: userData.name,
-  //               email: userData.email,
-  //               passwordHash: "",
-  //             },
-  //             type: QueryTypes.UPDATE,
-  //           }
-  //         );
-  //         return result;
-  //       }
-  //     } catch (error) {
-  //       throw new Error("Error updating user: " + error.message);
-  //     }
-  //   }
-
-  //   async deleteUser(id) {
-  //     try {
-  //       const user = await this.getUserById(id);
-  //       if (!user) throw new Error("User not found");
-  //       return await db.sequelize.query(`DELETE FROM users WHERE id=:id`, {
-  //         replacements: {
-  //           id,
-  //         },
-  //         type: QueryTypes.DELETE,
-  //       });
-  //     } catch (error) {
-  //       throw new Error("Error deleting user: " + error.message);
-  //     }
-  //   }
+  async deleteUser(id) {
+    try {
+      const user = await this.getUserById(id);
+      if (!user) throw new Error("User not found");
+      return await db.sequelize.query(`DELETE FROM users WHERE id=:id`, {
+        replacements: {
+          id,
+        },
+        type: QueryTypes.DELETE,
+      });
+    } catch (error) {
+      throw new Error("Error deleting user: " + error.message);
+    }
+  }
 
   //   async getUserByEmail(email, withPassword = false) {
   //     try {

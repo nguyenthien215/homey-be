@@ -17,21 +17,29 @@ class UserController extends BaseController {
     }
   }
 
-  async getUserById(req, res) {
+  async createUser(req, res) {
     try {
-      const { id } = req.params;
-      const user = await this.service.getUserById(id);
-      res.json(user);
+      const userData = req.body;
+
+      // Kiểm tra dữ liệu đầu vào tối thiểu
+      if (!userData.userName || !userData.email || !userData.password || !userData.role) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const user = await this.service.createUser(userData);
+      return res.status(201).json({ status: true, data: user });
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error creating user:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   }
 
-  async createUser(req, res) {
+
+  async updateUser(req, res) {
     try {
+      const { id } = req.params;
       const userData = req.body;
-      await this.service.createUser(userData);
+      await this.service.updateUser(id, userData);
       return res.status(200).json({ status: true });
     } catch (error) {
       console.error("Error creating user:", error);
@@ -39,28 +47,16 @@ class UserController extends BaseController {
     }
   }
 
-  // async updateUser(req, res) {
-  //   try {
-  //     const { id } = req.params;
-  //     const userData = req.body;
-  //     await this.service.updateUser(id, userData);
-  //     return res.status(200).json({ status: true });
-  //   } catch (error) {
-  //     console.error("Error creating user:", error);
-  //     return res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
-
-  // async deleteUser(req, res) {
-  //   try {
-  //     const { id } = req.params;
-  //     await this.service.deleteUser(id);
-  //     return res.status(200).json({ status: true });
-  //   } catch (error) {
-  //     console.error("Error creating user:", error);
-  //     return res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
+  async deleteUser(req, res) {
+    try {
+      const { id } = req.params;
+      await this.service.deleteUser(id);
+      return res.status(200).json({ status: true });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 }
 
 export default UserController;

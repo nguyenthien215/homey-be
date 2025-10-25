@@ -1,15 +1,22 @@
 import { Router } from "express";
 import PromotionController from "../controllers/promotion.controller.js";
-// import middlewares from "../middlewares/index.js";
 
-const controller = new PromotionController();
 const router = Router();
-// define the about route
-router.get("/", controller.getAllPromotions);
-// router.post("/", controller.createUser);
-// router.delete("/:id", controller.deleteUser);
-// router.get("/:id", controller.getUserById);
-// router.put("/:id", controller.editUser);
+const controller = new PromotionController();
+
+// Lấy tất cả khuyến mãi
+router.get("/", controller.getAllPromotions.bind(controller));
+
+// Lấy chi tiết 1 khuyến mãi theo ID
+router.get("/:id", controller.getPromotionById.bind(controller));
+
+// Tạo mới khuyến mãi
+router.post("/", controller.createPromotion.bind(controller));
+
+// Cập nhật khuyến mãi
+router.put("/:id", controller.editPromotion.bind(controller));
+
+// Xóa khuyến mãi
+router.delete("/:id", controller.deletePromotion.bind(controller));
 
 export default router;
-

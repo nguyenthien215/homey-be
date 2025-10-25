@@ -4,21 +4,28 @@ import db from "../database/models/index.js";
 import AppConfig from "../config/index.js";
 
 export default class AuthController {
-  // Đăng ký
+  //  Đăng ký
   async signup(req, res) {
     try {
-      const { userName, email, password, phone } = req.body;
+      const { userName, email, password, phone, roleName } = req.body;
 
-      // Kiểm tra email tồn tại
+      // Kiểm tra dữ liệu đầu vào
+      if (!userName || !email || !password || !phone) {
+        return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
+      }
+
+      // Kiểm tra email đã tồn tại
       const exist = await db.User.findOne({ where: { email } });
       if (exist) return res.status(400).json({ message: "Email đã tồn tại" });
 
       // Hash mật khẩu
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Lấy role mặc định là customer
-      const role = await db.Role.findOne({ where: { name: "customer" } });
-      if (!role) return res.status(400).json({ message: "Không tìm thấy role customer" });
+      // Xác định role (nếu người dùng không truyền thì mặc định là customer)
+      const role = await db.Role.findOne({
+        where: { name: roleName || "customer" },
+      });
+      if (!role) return res.status(400).json({ message: "Không tìm thấy role hợp lệ" });
 
       // Tạo user mới
       const user = await db.User.create({
@@ -29,19 +36,31 @@ export default class AuthController {
         role_id: role.id,
       });
 
-      return res.status(201).json({ message: "Đăng ký thành công", user });
+      return res.status(201).json({
+        message: "Đăng ký thành công",
+        user: {
+          id: user.id,
+          userName: user.userName,
+          email: user.email,
+          phone: user.phone,
+          role: role.name,
+        },
+      });
     } catch (err) {
       console.error("Signup error:", err);
       return res.status(500).json({ message: "Lỗi server", error: err.message });
     }
   }
 
-  // Đăng nhập
+  //  Đăng nhập
   async signin(req, res) {
     try {
       const { email, password } = req.body;
 
-      // Tìm user theo email, include role
+      if (!email || !password)
+        return res.status(400).json({ message: "Vui lòng nhập email và mật khẩu" });
+
+      // Tìm user và lấy role
       const user = await db.User.findOne({
         where: { email },
         include: [{ model: db.Role, as: "role" }],
@@ -57,26 +76,24 @@ export default class AuthController {
       const token = jwt.sign(
         { sub: user.id, role: user.role?.name },
         AppConfig.jwt.JWT_SECRET || "secret_key",
-        { expiresIn: "1h" }
+        { expiresIn: "2h" }
       );
 
-      // Lưu token vào cookie
+      // Lưu token vào cookie (nếu cần)
       res.cookie("accessToken", token, {
         httpOnly: true,
         secure: false,
-        maxAge: 60 * 60 * 1000,
+        maxAge: 2 * 60 * 60 * 1000,
       });
 
-      // ✅ Nếu bạn dùng backend render: chuyển hướng về trang chủ
-      // return res.redirect("/home");
-
-      // ✅ Nếu bạn dùng frontend React/Vue: trả JSON để frontend xử lý
+      // Trả về thông tin user cho frontend
       return res.json({
         message: "Đăng nhập thành công",
         user: {
           id: user.id,
           userName: user.userName,
           email: user.email,
+          phone: user.phone,
           role: user.role?.name,
         },
         accessToken: token,
@@ -87,7 +104,7 @@ export default class AuthController {
     }
   }
 
-  // Lấy thông tin profile
+  //  Lấy thông tin người dùng
   async getProfile(req, res) {
     try {
       const user = await db.User.findByPk(req.user.id, {
@@ -99,6 +116,7 @@ export default class AuthController {
         id: user.id,
         userName: user.userName,
         email: user.email,
+        phone: user.phone,
         role: user.role?.name,
       });
     } catch (err) {
@@ -106,6 +124,7 @@ export default class AuthController {
     }
   }
 
+  //  Đăng xuất
   async signout(req, res) {
     try {
       res.clearCookie("accessToken");

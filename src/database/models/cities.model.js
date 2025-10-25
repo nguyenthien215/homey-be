@@ -1,9 +1,15 @@
+// src/database/models/city.model.js
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
     class City extends Model {
         static associate(models) {
-            City.hasMany(models.Room, { foreignKey: "city_id", as: "rooms" });
+            // Một thành phố có nhiều phòng
+            City.hasMany(models.Room, {
+                foreignKey: "city_id",
+                as: "rooms",
+                onDelete: "CASCADE"
+            });
         }
     }
 

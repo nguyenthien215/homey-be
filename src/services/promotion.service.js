@@ -5,6 +5,7 @@ class PromotionService {
         this.repository = new PromotionRepository();
     }
 
+    // Lấy tất cả khuyến mãi
     async getAllPromotions(req) {
         try {
             return await this.repository.getAllPromotions(req);
@@ -12,37 +13,48 @@ class PromotionService {
             throw new Error("Error fetching promotions: " + error.message);
         }
     }
-    // async getCategoryById(id) {
-    //   try {
-    //     return await this.repository.getCategoryById(id);
-    //   } catch (error) {
-    //     throw new Error("Error fetching category: " + error.message);
-    //   }
-    // }
 
-    // async createCategory(data) {
-    //   try {
-    //     return await this.repository.createCategory(data);
-    //   } catch (error) {
-    //     throw new Error("Error creating product: " + error.message);
-    //   }
-    // }
+    // Lấy chi tiết khuyến mãi theo ID
+    async getPromotionById(id) {
+        try {
+            const promotion = await this.repository.getPromotionById(id);
+            if (!promotion) throw new Error("Promotion not found");
+            return promotion;
+        } catch (error) {
+            throw new Error("Error fetching promotion: " + error.message);
+        }
+    }
 
-    // async editCategory(id, data) {
-    //   try {
-    //     return await this.repository.editCategory(id, data);
-    //   } catch (error) {
-    //     throw new Error("Error updating category: " + error.message);
-    //   }
-    // }
+    // Tạo khuyến mãi mới
+    async createPromotion(data) {
+        try {
+            return await this.repository.createPromotion(data);
+        } catch (error) {
+            throw new Error("Error creating promotion: " + error.message);
+        }
+    }
 
-    // async deleteCategory(id) {
-    //   try {
-    //     return await this.repository.deleteCategory(id);
-    //   } catch (error) {
-    //     throw new Error("Error deleting category: " + error.message);
-    //   }
-    // }
+    // Chỉnh sửa khuyến mãi
+    async editPromotion(id, data) {
+        try {
+            const promotion = await this.repository.getPromotionById(id);
+            if (!promotion) throw new Error("Promotion not found");
+            return await this.repository.editPromotion(id, data);
+        } catch (error) {
+            throw new Error("Error updating promotion: " + error.message);
+        }
+    }
+
+    // Xóa khuyến mãi
+    async deletePromotion(id) {
+        try {
+            const promotion = await this.repository.getPromotionById(id);
+            if (!promotion) throw new Error("Promotion not found");
+            return await this.repository.deletePromotion(id);
+        } catch (error) {
+            throw new Error("Error deleting promotion: " + error.message);
+        }
+    }
 }
 
 export default PromotionService;

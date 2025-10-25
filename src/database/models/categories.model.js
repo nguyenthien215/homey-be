@@ -1,4 +1,3 @@
-// src/database/models/categories.model.js
 import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
@@ -14,7 +13,6 @@ export default (sequelize) => {
                 type: DataTypes.STRING(100),
                 allowNull: false,
             },
-            // image_url là JSON (mảng đường dẫn) theo migration bạn seed
             image_url: {
                 type: DataTypes.JSON,
                 allowNull: false,
@@ -36,7 +34,7 @@ export default (sequelize) => {
     );
 
     Category.associate = (db) => {
-        // match tên foreign key trong bảng rooms (category_id)
+        // ✅ Đảm bảo alias và foreign key đồng bộ với Room
         Category.hasMany(db.Room, {
             foreignKey: "category_id",
             as: "rooms",

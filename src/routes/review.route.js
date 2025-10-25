@@ -12,4 +12,3 @@ router.get("/", controller.getAllReviews);
 // router.put("/:id", controller.editUser);
 
 export default router;
-

@@ -5,7 +5,7 @@ import { jwt } from "../middlewares/index.js";
 const controller = new AuthController();
 const router = Router();
 
-// ⚡️ Dùng bind để giữ context cho class method
+
 router.post("/signin", controller.signin.bind(controller));
 router.post("/signout", controller.signout.bind(controller));
 router.post("/signup", controller.signup.bind(controller));

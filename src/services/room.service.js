@@ -1,4 +1,3 @@
-// src/services/room.service.js
 import RoomRepository from "../repositories/room.repository.js";
 
 class RoomService {
@@ -14,16 +13,16 @@ class RoomService {
         return await this.roomRepository.getRoomById(id);
     }
 
-    // ✅ THÊM HÀM NÀY (bắt buộc)
     async getRoomDetailById(id) {
         return await this.roomRepository.getRoomDetailById(id);
     }
 
     async getRoomsByCategory(categoryId) {
-        throw new Error("getRoomsByCategory chưa được triển khai trong RoomRepository");
+        return await this.roomRepository.getRoomsByCategory(categoryId);
     }
 
     async createRoom(data) {
+        // Đây là service thật sự: chỉ nhận data
         return await this.roomRepository.createRoom(data);
     }
 

@@ -59,7 +59,12 @@ class RoomController {
 
     createRoom = async (req, res) => {
         try {
-            const newRoom = await this.roomService.createRoom(req.body);
+            const roomData = {
+                ...req.body,
+                user_id: req.user.id // lấy từ token
+            };
+
+            const newRoom = await this.roomRepository.createRoom(roomData);
             res.status(201).json({ success: true, data: newRoom });
         } catch (error) {
             console.error("❌ Lỗi khi tạo phòng:", error);

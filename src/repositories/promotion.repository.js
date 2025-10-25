@@ -73,108 +73,85 @@ class PromotionRepository {
     //     }
     //   }
 
-    //   async createUser(userData) {
-    //     try {
-    //       return await db.sequelize.query(
-    //         "INSERT INTO users (id, name, email, passwordHash) VALUES (:id, :name, :email, :passwordHash)",
-    //         {
-    //           replacements: {
-    //             id: uuidv4(),
-    //             name: userData.name,
-    //             email: userData.email,
-    //             passwordHash: userData.passwordHash,
-    //           },
-    //           type: QueryTypes.INSERT,
-    //         }
-    //       );
-    //     } catch (error) {
-    //       throw new Error("Error creating user: " + error.message);
-    //     }
-    //   }
+    // 🔹 Tạo khuyến mãi mới
+    async createPromotion(data) {
+        try {
+            const id = uuidv4();
+            const {
+                code,
+                discount_type,
+                discount_value,
+                start_date,
+                end_date,
+                status,
+            } = data;
 
-    //   async updateUser(id, data, updateRefreshToken = false) {
-    //     const { refreshToken: token, ...userData } = data;
-    //     try {
-    //       const user = await this.getUserById(id, updateRefreshToken);
-    //       if (!user) throw new Error("User not found");
+            await db.sequelize.query(
+                `
+            INSERT INTO promotions (id, code, discount_type, discount_value, start_date, end_date, status, createdAt, updatedAt)
+            VALUES (:id, :code, :discount_type, :discount_value, :start_date, :end_date, :status, NOW(), NOW())
+            `,
+                {
+                    replacements: {
+                        id,
+                        code,
+                        discount_type,
+                        discount_value,
+                        start_date,
+                        end_date,
+                        status,
+                    },
+                    type: QueryTypes.INSERT,
+                }
+            );
 
-    //       if (updateRefreshToken) {
-    //         await this._updateOrCreateRefreshToken(user, token);
-    //         return user;
-    //       } else {
-    //         const result = await db.sequelize.query(
-    //           `UPDATE users
-    // SET name=:name, email=:email, passwordHash=:passwordHash
-    // WHERE id=:id`,
-    //           {
-    //             replacements: {
-    //               id,
-    //               name: userData.name,
-    //               email: userData.email,
-    //               passwordHash: "",
-    //             },
-    //             type: QueryTypes.UPDATE,
-    //           }
-    //         );
-    //         return result;
-    //       }
-    //     } catch (error) {
-    //       throw new Error("Error updating user: " + error.message);
-    //     }
-    //   }
+            return { id };
+        } catch (error) {
+            throw new Error("Error creating promotion: " + error.message);
+        }
+    }
 
-    //   async deleteUser(id) {
-    //     try {
-    //       const user = await this.getUserById(id);
-    //       if (!user) throw new Error("User not found");
-    //       return await db.sequelize.query(`DELETE FROM users WHERE id=:id`, {
-    //         replacements: {
-    //           id,
-    //         },
-    //         type: QueryTypes.DELETE,
-    //       });
-    //     } catch (error) {
-    //       throw new Error("Error deleting user: " + error.message);
-    //     }
-    //   }
 
-    //   async getUserByEmail(email, withPassword = false) {
-    //     try {
-    //       const user = withPassword
-    //         ? await this.model.scope("withPassword").findOne({
-    //             where: {
-    //               email,
-    //             },
-    //           })
-    //         : await this.model.findOne({
-    //             where: {
-    //               email,
-    //             },
-    //           });
-    //       return user;
-    //     } catch (error) {
-    //       throw new Error("Error check user existed: " + error.message);
-    //     }
-    //   }
+    // 🔹 Cập nhật khuyến mãi
+    async updatePromotion(id, data) {
+        try {
+            const fields = [];
+            const replacements = { id };
 
-    //   async _updateOrCreateRefreshToken(user, token) {
-    //     try {
-    //       // Get expiresAt from JWT
-    //       const expiresAt = getExpiresAtFromToken(token);
+            for (const [key, value] of Object.entries(data)) {
+                if (value !== undefined) {
+                    fields.push(`${key} = :${key}`);
+                    replacements[key] = value;
+                }
+            }
 
-    //       if (user.RefreshToken) {
-    //         await user.RefreshToken.update({
-    //           userId: user.id,
-    //           token,
-    //           expiresAt,
-    //         });
-    //       } else {
-    //         await user.createRefreshToken({ token, expiresAt });
-    //       }
-    //     } catch (error) {
-    //       throw new Error("Error check user existed: " + error.message);
-    //     }
-    //   }
+            if (fields.length === 0) throw new Error("No data provided for update");
+
+            const query = `
+                UPDATE promotions
+                SET ${fields.join(", ")}, updatedAt = NOW()
+                WHERE id = :id
+            `;
+
+            await db.sequelize.query(query, { replacements, type: QueryTypes.UPDATE });
+            return { message: "Promotion updated successfully" };
+        } catch (error) {
+            throw new Error("Error updating promotion: " + error.message);
+        }
+    }
+
+    // 🔹 Xóa khuyến mãi
+    async deletePromotion(id) {
+        try {
+            await db.sequelize.query(`DELETE FROM promotions WHERE id = :id`, {
+                replacements: { id },
+                type: QueryTypes.DELETE,
+            });
+            return { message: "Promotion deleted successfully" };
+        } catch (error) {
+            throw new Error("Error deleting promotion: " + error.message);
+        }
+    }
 }
 
 export default PromotionRepository;

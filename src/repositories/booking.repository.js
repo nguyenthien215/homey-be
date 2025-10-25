@@ -33,21 +33,18 @@ class BookingRepository {
             // Lấy danh sách user
             const rows = await db.sequelize.query(
                 `
-          SELECT id, start_date, end_date, quantity, total_price, status, createdAt, updatedAt
-          FROM bookings
-          WHERE id LIKE $search
-          ORDER BY ${sortField} ${sortOrder}
-          LIMIT $limit OFFSET $offset
-        `,
+        SELECT id, start_date, end_date, quantity, total_price, status, createdAt, updatedAt
+        FROM bookings
+        WHERE id LIKE :search
+        ORDER BY ${sortField} ${sortOrder}
+        LIMIT ${limit} OFFSET ${offset}
+      `,
                 {
-                    bind: {
-                        limit,
-                        offset,
-                        search: `%${search}%`,
-                    },
+                    replacements: { search: `%${search}%` },
                     type: QueryTypes.SELECT,
                 }
             );
+
 
             return {
                 data: rows,
