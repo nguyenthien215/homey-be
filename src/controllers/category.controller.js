@@ -9,6 +9,7 @@ class CategoryController extends BaseController {
   }
 
 
+
   async getAllCategories(req, res) {
     try {
       const categories = await this.service.getAllCategories(req);
@@ -33,11 +34,20 @@ class CategoryController extends BaseController {
   async createCategory(req, res) {
     try {
       const data = req.body;
-      await this.service.createCategory(data);
-      return res.status(200).json({ status: true });
+
+      // Nếu có file upload, xử lý upload ảnh
+      if (req.files && req.files.length > 0) {
+        data.image_url = req.files.map(file => `/uploads/img/${file.filename}`);
+      }
+
+      const newCategory = await this.service.createCategory(data);
+      res.status(201).json({
+        message: "Tạo danh mục thành công",
+        data: newCategory,
+      });
     } catch (error) {
-      console.error("❌ Error creating category:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
+      console.error("❌ CategoryController.createCategory:", error);
+      res.status(500).json({ message: error.message });
     }
   }
 
@@ -45,6 +55,12 @@ class CategoryController extends BaseController {
     try {
       const { id } = req.params;
       const data = req.body;
+
+      // Nếu có file upload, xử lý upload ảnh
+      if (req.files && req.files.length > 0) {
+        data.image_url = req.files.map(file => `/uploads/img/${file.filename}`);
+      }
+
       await this.service.editCategory(id, data);
       return res.status(200).json({ status: true });
     } catch (error) {

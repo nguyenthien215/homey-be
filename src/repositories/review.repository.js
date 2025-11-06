@@ -3,6 +3,42 @@ import db from "../database/models/index.js";
 import { v4 as uuidv4 } from "uuid";
 import { getExpiresAtFromToken } from "../helpers/jwt.js";
 
+
+export const addReview = async (req, res) => {
+    try {
+        const { room_id, user_id, rating, comment } = req.body;
+
+        // ✅ Kiểm tra có đặt phòng này không (và đã thanh toán / hoàn tất)
+        const booking = await db.Booking.findOne({
+            where: {
+                user_id,
+                room_id,
+                status: { [Op.in]: ["paid", "completed"] }, // tùy DB bạn dùng
+            },
+        });
+
+        if (!booking) {
+            return res.status(403).json({
+                message: "Bạn chỉ có thể đánh giá khi đã đặt và hoàn thành phòng này!",
+            });
+        }
+
+        // ✅ Tạo review (kèm id)
+        const review = await db.Review.create({
+            id: uuidv4(),
+            room_id,
+            user_id,
+            rating,
+            comment,
+        });
+
+        return res.status(201).json(review);
+    } catch (error) {
+        console.error("❌ Error adding review:", error);
+        res.status(500).json({ message: "Lỗi khi gửi đánh giá!" });
+    }
+};
+
 class ReviewRepository {
     constructor() {
         this.model = db.Review; // Initialize the User model
@@ -64,121 +100,85 @@ class ReviewRepository {
     }
 
 
-    //   async getUserById(id, includeRefreshToken = false) {
-    //     try {
-    //       return await (includeRefreshToken
-    //         ? this.model.findByPk(id, { include: db.RefreshToken })
-    //         : db.sequelize.query("SELECT * from users WHERE id = $id", {
-    //             bind: { id },
-    //             type: QueryTypes.SELECT,
-    //           }));
-    //     } catch (error) {
-    //       throw new Error("Error fetching user: " + error.message);
-    //     }
-    //   }
+    async getReviewById(id) {
+        try {
+            const review = await this.model.findByPk(id);
+            if (!review) throw new Error("Review not found");
+            return review;
+        } catch (error) {
+            throw new Error("Error fetching Reviews: " + error.message);
+        }
+    }
 
-    //   async createUser(userData) {
-    //     try {
-    //       return await db.sequelize.query(
-    //         "INSERT INTO users (id, name, email, passwordHash) VALUES (:id, :name, :email, :passwordHash)",
-    //         {
-    //           replacements: {
-    //             id: uuidv4(),
-    //             name: userData.name,
-    //             email: userData.email,
-    //             passwordHash: userData.passwordHash,
-    //           },
-    //           type: QueryTypes.INSERT,
-    //         }
-    //       );
-    //     } catch (error) {
-    //       throw new Error("Error creating user: " + error.message);
-    //     }
-    //   }
+    async createReviews(data) {
+        try {
+            const id = uuidv4();
+            const newReview = await this.model.create({
+                id,
+                rating: data.rating,
+                comment: data.comment,
+                room_id: data.room_id,
+                user_id: data.user_id,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+            return newReview;
+        } catch (error) {
+            throw new Error("Error creating review: " + error.message);
+        }
+    }
 
-    //   async updateUser(id, data, updateRefreshToken = false) {
-    //     const { refreshToken: token, ...userData } = data;
-    //     try {
-    //       const user = await this.getUserById(id, updateRefreshToken);
-    //       if (!user) throw new Error("User not found");
+    async updateReviews(id, data) {
+        try {
+            const review = await this.model.findByPk(id);
+            if (!review) throw new Error("Review not found");
 
-    //       if (updateRefreshToken) {
-    //         await this._updateOrCreateRefreshToken(user, token);
-    //         return user;
-    //       } else {
-    //         const result = await db.sequelize.query(
-    //           `UPDATE users
-    // SET name=:name, email=:email, passwordHash=:passwordHash
-    // WHERE id=:id`,
-    //           {
-    //             replacements: {
-    //               id,
-    //               name: userData.name,
-    //               email: userData.email,
-    //               passwordHash: "",
-    //             },
-    //             type: QueryTypes.UPDATE,
-    //           }
-    //         );
-    //         return result;
-    //       }
-    //     } catch (error) {
-    //       throw new Error("Error updating user: " + error.message);
-    //     }
-    //   }
+            const updatedReview = await review.update({
+                rating: data.rating ?? review.rating,
+                comment: data.comment ?? review.comment,
+                room_id: data.room_id ?? review.room_id,
+                user_id: data.user_id ?? review.user_id,
+            });
 
-    //   async deleteUser(id) {
-    //     try {
-    //       const user = await this.getUserById(id);
-    //       if (!user) throw new Error("User not found");
-    //       return await db.sequelize.query(`DELETE FROM users WHERE id=:id`, {
-    //         replacements: {
-    //           id,
-    //         },
-    //         type: QueryTypes.DELETE,
-    //       });
-    //     } catch (error) {
-    //       throw new Error("Error deleting user: " + error.message);
-    //     }
-    //   }
+            return updatedReview;
+        } catch (error) {
+            throw new Error("Error updating review: " + error.message);
+        }
+    }
 
-    //   async getUserByEmail(email, withPassword = false) {
-    //     try {
-    //       const user = withPassword
-    //         ? await this.model.scope("withPassword").findOne({
-    //             where: {
-    //               email,
-    //             },
-    //           })
-    //         : await this.model.findOne({
-    //             where: {
-    //               email,
-    //             },
-    //           });
-    //       return user;
-    //     } catch (error) {
-    //       throw new Error("Error check user existed: " + error.message);
-    //     }
-    //   }
+    async deleteReviews(id) {
+        try {
+            const review = await this.model.findByPk(id); // lấy instance model trực tiếp
+            if (!review) throw new Error("Review not found");
 
-    //   async _updateOrCreateRefreshToken(user, token) {
-    //     try {
-    //       // Get expiresAt from JWT
-    //       const expiresAt = getExpiresAtFromToken(token);
+            await review.destroy(); // xóa Reviews
+            return { success: true, message: "Review deleted successfully" };
+        } catch (error) {
+            throw new Error("Error deleting Review: " + error.message);
+        }
+    }
 
-    //       if (user.RefreshToken) {
-    //         await user.RefreshToken.update({
-    //           userId: user.id,
-    //           token,
-    //           expiresAt,
-    //         });
-    //       } else {
-    //         await user.createRefreshToken({ token, expiresAt });
-    //       }
-    //     } catch (error) {
-    //       throw new Error("Error check user existed: " + error.message);
-    //     }
-    //   }
+    async getReviewsByRoom(roomId) {
+        try {
+            const reviews = await db.sequelize.query(
+                `
+            SELECT r.id, r.rating, r.comment, r.createdAt, u.userName
+            FROM reviews r
+            JOIN users u ON u.id = r.user_id
+            WHERE r.room_id = :roomId
+            ORDER BY r.createdAt DESC
+            `,
+                {
+                    replacements: { roomId },
+                    type: QueryTypes.SELECT,
+                }
+            );
+            return reviews;
+        } catch (error) {
+            throw new Error("Error fetching reviews by room: " + error.message);
+        }
+    }
+
 }
 
 export default ReviewRepository;

@@ -57,25 +57,24 @@ class RoomController {
         }
     };
 
-    createRoom = async (req, res) => {
+    async createRoom(req, res) {
         try {
-            const roomData = {
-                ...req.body,
-                user_id: req.user.id // lấy từ token
-            };
-
-            const newRoom = await this.roomRepository.createRoom(roomData);
-            res.status(201).json({ success: true, data: newRoom });
+            const data = req.body;
+            const newRoom = await this.roomService.createRoom(data); // ✅ đổi từ this.service → this.roomService
+            res.status(201).json({
+                message: "Tạo phòng thành công",
+                data: newRoom,
+            });
         } catch (error) {
-            console.error("❌ Lỗi khi tạo phòng:", error);
-            res.status(500).json({ success: false, message: error.message });
+            console.error("❌ RoomController.createRoom:", error);
+            res.status(500).json({ message: error.message });
         }
-    };
+    }
 
-    editRoom = async (req, res) => {
+    updateRoom = async (req, res) => {
         try {
             const { id } = req.params;
-            const updatedRoom = await this.roomService.editRoom(id, req.body);
+            const updatedRoom = await this.roomService.updateRoom(id, req.body);
             res.status(200).json({ success: true, data: updatedRoom });
         } catch (error) {
             console.error("❌ Lỗi khi cập nhật phòng:", error);

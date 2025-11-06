@@ -35,11 +35,11 @@ class PromotionService {
     }
 
     // Chỉnh sửa khuyến mãi
-    async editPromotion(id, data) {
+    async updatePromotion(id, data) {
         try {
             const promotion = await this.repository.getPromotionById(id);
             if (!promotion) throw new Error("Promotion not found");
-            return await this.repository.editPromotion(id, data);
+            return await this.repository.updatePromotion(id, data);
         } catch (error) {
             throw new Error("Error updating promotion: " + error.message);
         }

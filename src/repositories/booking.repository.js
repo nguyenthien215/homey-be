@@ -8,57 +8,44 @@ class BookingRepository {
         this.model = db.Booking; // Initialize the User model
     }
 
-    async getAllBookings(req) {
+    async getAllBookings() {
         try {
-            const {
-                page = 1,
-                pageSize = 5,
-                search = "",
-                sortField = "createdAt",
-                sortOrder = "DESC",
-            } = req.query;
-
-            const limit = Math.max(parseInt(pageSize), 1);
-            const offset = (Math.max(parseInt(page), 1) - 1) * limit;
-
-            // Đếm tổng số user thỏa điều kiện search
-            const count = await this.model.count({
-                where: {
-                    id: {
-                        [Op.like]: `%${search}%`,
-                    },
-                },
-            });
-
-            // Lấy danh sách user
-            const rows = await db.sequelize.query(
-                `
-        SELECT id, start_date, end_date, quantity, total_price, status, createdAt, updatedAt
-        FROM bookings
-        WHERE id LIKE :search
-        ORDER BY ${sortField} ${sortOrder}
-        LIMIT ${limit} OFFSET ${offset}
-      `,
-                {
-                    replacements: { search: `%${search}%` },
-                    type: QueryTypes.SELECT,
-                }
-            );
-
-
-            return {
-                data: rows,
-                pagination: {
-                    total: count,
-                    page: parseInt(page),
-                    pageSize: limit,
-                    totalPages: Math.ceil(count / limit) || 1,
-                },
-            };
+            const [bookings] = await db.sequelize.query(`
+        SELECT 
+          b.id,
+          b.start_date,
+          b.end_date,
+          b.quantity,
+          b.total_price,
+          b.status,
+          b.createdAt,
+          u.userName AS userName,
+          r.name AS roomName
+        FROM bookings b
+        JOIN users u ON b.user_id = u.id
+        JOIN rooms r ON b.room_id = r.id
+        ORDER BY b.createdAt DESC
+      `);
+            return bookings;
         } catch (error) {
             throw new Error("Error fetching bookings: " + error.message);
         }
     }
+
+    async getBookingsByUserId(user_id) {
+        return await db.Booking.findAll({
+            where: { user_id },
+            include: [
+                {
+                    model: db.Room,
+                    as: "room",
+                    attributes: ["name", "price", "description", "image"],
+                },
+            ],
+            order: [["createdAt", "DESC"]],
+        });
+    }
+
 
     //   async getUserById(id, includeRefreshToken = false) {
     //     try {

@@ -17,20 +17,33 @@ class UserController extends BaseController {
     }
   }
 
+  async getUserById(req, res) {
+    try {
+      const { id } = req.params;
+      const user = await this.service.getUserById(id);
+      res.json(user);
+    } catch (error) {
+      console.error("❌ Error fetching user:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+
   async createUser(req, res) {
     try {
       const userData = req.body;
+      const newUser = await this.service.createUser(userData);
 
-      // Kiểm tra dữ liệu đầu vào tối thiểu
-      if (!userData.userName || !userData.email || !userData.password || !userData.role) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
-
-      const user = await this.service.createUser(userData);
-      return res.status(201).json({ status: true, data: user });
+      return res.status(201).json({
+        status: true,
+        message: "Tạo user thành công!",
+        data: newUser,
+      });
     } catch (error) {
-      console.error("Error creating user:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error creating user:", error.message, error.stack);
+      return res.status(500).json({
+        status: false,
+        error: error.message || "Internal Server Error",
+      });
     }
   }
 

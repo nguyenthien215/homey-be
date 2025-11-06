@@ -3,6 +3,8 @@ import { Model, DataTypes } from "sequelize";
 export default (sequelize) => {
     class Room extends Model {
         static associate(models) {
+
+            Room.hasMany(models.Booking, { foreignKey: "room_id", as: "bookings" });
             // Một phòng có một bản ghi chi tiết
             Room.hasOne(models.RoomDetail, {
                 foreignKey: "room_id",
@@ -20,6 +22,10 @@ export default (sequelize) => {
             Room.belongsTo(models.City, {
                 foreignKey: "city_id",
                 as: "city",
+            });
+            Room.belongsTo(models.User, {
+                foreignKey: "user_id",
+                as: "user", // hoặc "user"
             });
         }
     }

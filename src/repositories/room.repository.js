@@ -1,21 +1,32 @@
 // src/repositories/room.repository.js
 import { Op } from "sequelize";
 import db from "../database/models/index.js";
+import { v4 as uuidv4 } from "uuid";
 
 class RoomRepository {
     constructor() {
         this.model = db.Room;
     }
 
-    //  Lấy tất cả phòng (có phân trang)
+    //  Lấy tất cả phòng (có phân trang và search)
     async getAllRooms(req) {
         try {
             const page = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
             const pageSize = Number(req.query.pageSize) > 0 ? Number(req.query.pageSize) : 6;
+            const search = req.query.search || "";
             const limit = pageSize;
             const offset = (page - 1) * limit;
 
+            // Điều kiện where cho search
+            const whereCondition = search ? {
+                [Op.or]: [
+                    { name: { [Op.like]: `%${search}%` } },
+                    { description: { [Op.like]: `%${search}%` } }
+                ]
+            } : {};
+
             const { count, rows } = await this.model.findAndCountAll({
+                where: whereCondition,
                 order: [["createdAt", "DESC"]],
                 limit,
                 offset,
@@ -30,6 +41,11 @@ class RoomRepository {
                         model: db.City,
                         as: "city",
                         attributes: ["id", "name"],
+                    },
+                    {
+                        model: db.User,
+                        as: "user",
+                        attributes: ["id", "userName"],
                     },
                 ],
             });
@@ -155,80 +171,76 @@ class RoomRepository {
     //  Tạo mới phòng
     async createRoom(data) {
         try {
-            if (!data.category_id) throw new Error("category_id là bắt buộc");
-            return await this.model.create(data);
+            const id = uuidv4();
+
+            const newRoom = await this.model.create({
+                id,
+                name: data.name,
+                description: data.description, // bắt buộc
+                price: data.price,
+                stock: data.stock,
+                category_id: data.category_id,
+                city_id: data.city_id,         // bắt buộc
+                user_id: data.user_id,         // nếu có
+                image_url: data.image_url || [],
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            return newRoom;
         } catch (error) {
-            throw new Error("Error creating room: " + error.message);
+            console.error("❌ RoomRepository.createRoom:", error);
+            throw new Error("Error creating room in repository: " + error.message);
         }
     }
 
     // ✅ Cập nhật phòng
-    async editRoom(id, data) {
+    async updateRoom(id, data) {
         try {
-            const room = await this.getRoomById(id);
+            // Lấy instance trực tiếp từ model
+            const room = await this.model.findByPk(id);
             if (!room) throw new Error("Room not found");
-            return await this.model.update(data, { where: { id } });
+
+            // Cập nhật các trường cho phép
+            const updatedRoom = await room.update({
+                name: data.name ?? room.name,
+                description: data.description ?? room.description,
+                price: data.price ?? room.price,
+                stock: data.stock ?? room.stock,
+                category_id: data.category_id ?? room.category_id,
+                city_id: data.city_id ?? room.city_id,
+                user_id: data.user_id ?? room.user_id,
+                image_url: data.image_url ?? room.image_url,
+            });
+
+            // Parse image_url nếu cần
+            if (typeof updatedRoom.image_url === "string") {
+                try {
+                    updatedRoom.image_url = JSON.parse(updatedRoom.image_url);
+                } catch {
+                    updatedRoom.image_url = [updatedRoom.image_url];
+                }
+            }
+
+            return updatedRoom;
         } catch (error) {
+            console.error("❌ RoomRepository.updateRoom:", error);
             throw new Error("Error updating room: " + error.message);
         }
     }
 
-    // ✅ Xóa phòng
+
     async deleteRoom(id) {
         try {
-            const room = await this.getRoomById(id);
+            const room = await this.model.findByPk(id); // lấy instance model trực tiếp
             if (!room) throw new Error("Room not found");
-            return await this.model.destroy({ where: { id } });
+
+            await room.destroy(); // xóa Room
+            return { success: true, message: "Room deleted successfully" };
         } catch (error) {
-            throw new Error("Error deleting room: " + error.message);
+            throw new Error("Error deleting Room: " + error.message);
         }
     }
 }
 
 export default RoomRepository;
-
-
-
-
-
-
-//   async getUserByEmail(email, withPassword = false) {
-//     try {
-//       const user = withPassword
-//         ? await this.model.scope("withPassword").findOne({
-//             where: {
-//               email,
-//             },
-//           })
-//         : await this.model.findOne({
-//             where: {
-//               email,
-//             },
-//           });
-//       return user;
-//     } catch (error) {
-//       throw new Error("Error check user existed: " + error.message);
-//     }
-//   }
-
-//   async _updateOrCreateRefreshToken(user, token) {
-//     try {
-//       // Get expiresAt from JWT
-//       const expiresAt = getExpiresAtFromToken(token);
-
-//       if (user.RefreshToken) {
-//         await user.RefreshToken.update({
-//           userId: user.id,
-//           token,
-//           expiresAt,
-//         });
-//       } else {
-//         await user.createRefreshToken({ token, expiresAt });
-//       }
-//     } catch (error) {
-//       throw new Error("Error check user existed: " + error.message);
-//     }
-//   }
-
-
-

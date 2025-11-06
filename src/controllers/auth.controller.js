@@ -1,7 +1,10 @@
+// backend/controllers/auth.controller.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import db from "../database/models/index.js";
 import AppConfig from "../config/index.js";
+
+const JWT_SECRET = process.env.JWT_SECRET || (AppConfig && AppConfig.jwt && AppConfig.jwt.JWT_SECRET) || "secret_key";
 
 export default class AuthController {
   //  Đăng ký
@@ -9,25 +12,20 @@ export default class AuthController {
     try {
       const { userName, email, password, phone, roleName } = req.body;
 
-      // Kiểm tra dữ liệu đầu vào
       if (!userName || !email || !password || !phone) {
         return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
       }
 
-      // Kiểm tra email đã tồn tại
       const exist = await db.User.findOne({ where: { email } });
       if (exist) return res.status(400).json({ message: "Email đã tồn tại" });
 
-      // Hash mật khẩu
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Xác định role (nếu người dùng không truyền thì mặc định là customer)
       const role = await db.Role.findOne({
         where: { name: roleName || "customer" },
       });
       if (!role) return res.status(400).json({ message: "Không tìm thấy role hợp lệ" });
 
-      // Tạo user mới
       const user = await db.User.create({
         userName,
         email,
@@ -60,7 +58,6 @@ export default class AuthController {
       if (!email || !password)
         return res.status(400).json({ message: "Vui lòng nhập email và mật khẩu" });
 
-      // Tìm user và lấy role
       const user = await db.User.findOne({
         where: { email },
         include: [{ model: db.Role, as: "role" }],
@@ -68,25 +65,23 @@ export default class AuthController {
 
       if (!user) return res.status(400).json({ message: "Sai email hoặc mật khẩu" });
 
-      // So sánh mật khẩu
       const validPass = await bcrypt.compare(password, user.password);
       if (!validPass) return res.status(400).json({ message: "Sai email hoặc mật khẩu" });
 
-      // Tạo JWT token
+      // !! IMPORTANT: payload uses { id, role } (not sub), and uses same JWT_SECRET as middleware
       const token = jwt.sign(
-        { sub: user.id, role: user.role?.name },
-        AppConfig.jwt.JWT_SECRET || "secret_key",
+        { id: user.id, role: user.role?.name },
+        AppConfig.jwt.JWT_SECRET || process.env.JWT_SECRET || "jwt_secret",
         { expiresIn: "2h" }
       );
 
-      // Lưu token vào cookie (nếu cần)
+      // Set cookie if you want to support cookie-based auth (optional)
       res.cookie("accessToken", token, {
         httpOnly: true,
-        secure: false,
+        secure: false, // set true in production with https
         maxAge: 2 * 60 * 60 * 1000,
       });
 
-      // Trả về thông tin user cho frontend
       return res.json({
         message: "Đăng nhập thành công",
         user: {
@@ -107,7 +102,11 @@ export default class AuthController {
   //  Lấy thông tin người dùng
   async getProfile(req, res) {
     try {
-      const user = await db.User.findByPk(req.user.id, {
+      // req.user should be set by jwt middleware as { id, role, ... }
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+      const user = await db.User.findByPk(userId, {
         include: [{ model: db.Role, as: "role" }],
       });
       if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
@@ -120,6 +119,7 @@ export default class AuthController {
         role: user.role?.name,
       });
     } catch (err) {
+      console.error("GetProfile error:", err);
       return res.status(500).json({ message: err.message });
     }
   }

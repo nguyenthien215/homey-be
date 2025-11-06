@@ -15,7 +15,7 @@ export default class UploadController extends BaseController {
       const urls = await this.service.upload(req.files);
       res.json({ urls });
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("❌ UploadController error:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   }

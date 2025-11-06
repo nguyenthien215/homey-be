@@ -1,5 +1,7 @@
 import BookingService from "../services/booking.service.js";
 import BaseController from "./base.controller.js";
+import db from "../database/models/index.js";
+import { v4 as uuidv4 } from "uuid";
 
 class BookingController extends BaseController {
     constructor() {
@@ -7,55 +9,36 @@ class BookingController extends BaseController {
         this.service = new BookingService();
     }
 
-    /** -------------------- ADMIN -------------------- **/
-
-    // 🧩 Lấy toàn bộ danh sách booking (admin xem tất cả)
     async getAllBookings(req, res) {
         try {
             const bookings = await this.service.getAllBookings(req);
-            return res.status(200).json({
-                success: true,
-                data: bookings,
-            });
+            res.status(200).json(bookings);
         } catch (error) {
-            console.error("Error fetching bookings:", error);
-            return res.status(500).json({ error: "Internal Server Error" });
+            console.error("❌ Error fetching bookings:", error);
+            res.status(500).json({ message: "Error fetching bookings" });
         }
     }
 
-    /** -------------------- USER -------------------- **/
-
-    // 🧾 Tạo booking mới (user đặt phòng)
+    // 🏨 Tạo booking mới
     async createBooking(req, res) {
         try {
-            const user_id = req.user?.id; // lấy user từ token (auth middleware)
-            const { room_id, start_date, end_date, quantity, total_price } = req.body;
+            const { room_id, start_date, end_date, quantity, total_price, status } = req.body;
+            const user_id = req.user.id;
 
-            if (!user_id) {
-                return res.status(401).json({ error: "Bạn cần đăng nhập để đặt phòng" });
-            }
-
-            if (!room_id || !start_date || !end_date || !quantity || !total_price) {
-                return res.status(400).json({ error: "Thiếu thông tin đặt phòng" });
-            }
-
-            const newBooking = await this.service.createBooking({
+            const booking = await db.Booking.create({
                 user_id,
                 room_id,
                 start_date,
                 end_date,
                 quantity,
                 total_price,
+                status,
             });
 
-            return res.status(201).json({
-                success: true,
-                message: "Đặt phòng thành công!",
-                data: newBooking,
-            });
+            return res.status(201).json({ message: "Tạo booking thành công", data: booking });
         } catch (error) {
-            console.error("Error creating booking:", error);
-            return res.status(500).json({ error: "Internal Server Error" });
+            console.error(error);
+            return res.status(500).json({ message: "Lỗi server" });
         }
     }
 
@@ -76,7 +59,7 @@ class BookingController extends BaseController {
         }
     }
 
-    // ❌ Hủy đặt phòng (user hoặc admin)
+    // ❌ Hủy đặt phòng
     async cancelBooking(req, res) {
         try {
             const { id } = req.params;
@@ -92,7 +75,7 @@ class BookingController extends BaseController {
         }
     }
 
-    // ✅ Xác nhận đặt phòng (admin)
+    // ✅ Xác nhận đặt phòng
     async confirmBooking(req, res) {
         try {
             const { id } = req.params;
@@ -108,7 +91,7 @@ class BookingController extends BaseController {
         }
     }
 
-    // ✅ Đánh dấu hoàn thành (admin)
+    // ✅ Đánh dấu hoàn tất
     async completeBooking(req, res) {
         try {
             const { id } = req.params;
@@ -126,49 +109,3 @@ class BookingController extends BaseController {
 }
 
 export default BookingController;
-
-// async getCategoryById(req, res) {
-//   try {
-//     const { id } = req.params;
-//     const category = await this.service.getCategoryById(id);
-//     res.json(category);
-//   } catch (error) {
-//     console.error("Error fetching category:", error);
-//     return res.status(500).json({ error: "Internal Server Error" });
-//   }
-// }
-
-// async createCategory(req, res) {
-//   try {
-//     const data = req.body;
-//     await this.service.createCategory(data);
-//     return res.status(200).json({ status: true });
-//   } catch (error) {
-//     console.error("Error creating category:", error);
-//     return res.status(500).json({ error: "Internal Server Error" });
-//   }
-// }
-
-// async editCategory(req, res) {
-//   try {
-//     const { id } = req.params;
-//     const data = req.body;
-//     await this.service.editCategory(id, data);
-//     return res.status(200).json({ status: true });
-//   } catch (error) {
-//     console.error("Error creating category:", error);
-//     return res.status(500).json({ error: "Internal Server Error" });
-//   }
-// }
-
-// async deleteCategory(req, res) {
-//   try {
-//     const { id } = req.params;
-//     await this.service.deleteCategory(id);
-//     return res.status(200).json({ status: true });
-//   } catch (error) {
-//     console.error("Error dalete category:", error);
-//     return res.status(500).json({ error: "Internal Server Error" });
-//   }
-// }
-

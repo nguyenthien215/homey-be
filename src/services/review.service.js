@@ -12,37 +12,46 @@ class ReviewService {
             throw new Error("Error fetching reviews: " + error.message);
         }
     }
-    // async getCategoryById(id) {
-    //   try {
-    //     return await this.repository.getCategoryById(id);
-    //   } catch (error) {
-    //     throw new Error("Error fetching category: " + error.message);
-    //   }
-    // }
+    async getReviewById(id) {
+        try {
+            return await this.repository.getReviewById(id);
+        } catch (error) {
+            throw new Error("Error fetching review: " + error.message);
+        }
+    }
 
-    // async createCategory(data) {
-    //   try {
-    //     return await this.repository.createCategory(data);
-    //   } catch (error) {
-    //     throw new Error("Error creating product: " + error.message);
-    //   }
-    // }
+    async createReviews(data) {
+        try {
+            return await this.repository.createReviews(data);
+        } catch (error) {
+            throw new Error("Error creating Reviews: " + error.message);
+        }
+    }
 
-    // async editCategory(id, data) {
-    //   try {
-    //     return await this.repository.editCategory(id, data);
-    //   } catch (error) {
-    //     throw new Error("Error updating category: " + error.message);
-    //   }
-    // }
+    async updateReviews(id, data) {
+        try {
+            return await this.repository.updateReviews(id, data);
+        } catch (error) {
+            throw new Error("Error updating Reviews: " + error.message);
+        }
+    }
 
-    // async deleteCategory(id) {
-    //   try {
-    //     return await this.repository.deleteCategory(id);
-    //   } catch (error) {
-    //     throw new Error("Error deleting category: " + error.message);
-    //   }
-    // }
+    async deleteReviews(id) {
+        try {
+            return await this.repository.deleteReviews(id);
+        } catch (error) {
+            throw new Error("Error deleting Reviews: " + error.message);
+        }
+    }
+
+    async getReviewsByRoom(roomId) {
+        try {
+            return await this.repository.getReviewsByRoom(roomId);
+        } catch (error) {
+            throw new Error("Error fetching reviews by room: " + error.message);
+        }
+    }
+
 }
 
 export default ReviewService;

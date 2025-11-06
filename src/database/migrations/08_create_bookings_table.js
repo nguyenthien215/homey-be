@@ -20,7 +20,7 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.UUID,
       allowNull: false,
       references: {
-        model: "rooms",
+        model: "room_details",
         key: "id",
       },
       onDelete: "CASCADE",

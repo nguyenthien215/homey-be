@@ -7,6 +7,7 @@ export default (sequelize) => {
             Booking.belongsTo(models.Room, { foreignKey: "room_id", as: "room" });
             Booking.hasOne(models.Payment, { foreignKey: "booking_id", as: "payment" });
         }
+
     }
 
     Booking.init(

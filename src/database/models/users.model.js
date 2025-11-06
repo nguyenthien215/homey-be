@@ -11,6 +11,10 @@ export default (sequelize) => {
             });
             // User có nhiều Booking
             User.hasMany(models.Booking, { foreignKey: "user_id", as: "bookings" });
+            User.hasMany(models.Room, {
+                foreignKey: "user_id",
+                as: "rooms",
+            });
         }
     }
 

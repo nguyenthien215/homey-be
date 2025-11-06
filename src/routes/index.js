@@ -7,6 +7,10 @@ import roomRouter from "./room.route.js";
 import bookingRouter from "./booking.route.js";
 import promotionRouter from "./promotion.route.js";
 import reviewRouter from "./review.route.js";
+import roleRouter from "./role.route.js"
+import cityRouter from "./city.route.js";
+import paymentRouter from "./payments.route.js";
+import dashboardRouter from "./dashboard.route.js";
 
 const v1Router = Router();
 
@@ -18,6 +22,10 @@ v1Router
   .use("/rooms", roomRouter)
   .use("/bookings", bookingRouter)
   .use("/promotions", promotionRouter)
-  .use("/reviews", reviewRouter);
+  .use("/reviews", reviewRouter)
+  .use("/roles", roleRouter)
+  .use("/cities", cityRouter)
+  .use("/payments", paymentRouter)
+  .use("/dashboard", dashboardRouter);
 
 export default { v1: v1Router };

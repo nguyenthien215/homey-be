@@ -29,6 +29,16 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       id: uuidv4(),
+      userName: "nhat",
+      password: bcrypt.hashSync("111111", 10),
+      email: "nhat@gmail.com",
+      phone: "0123456789",
+      role_id: roles.admin,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: uuidv4(),
       userName: "ownerUser",
       password: bcrypt.hashSync("owner123", 10),
       email: "owner@example.com",

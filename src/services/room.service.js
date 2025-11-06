@@ -21,13 +21,15 @@ class RoomService {
         return await this.roomRepository.getRoomsByCategory(categoryId);
     }
 
-    async createRoom(data) {
-        // Đây là service thật sự: chỉ nhận data
-        return await this.roomRepository.createRoom(data);
+    async createRoom(roomData) {
+        try {
+            return await this.roomRepository.createRoom(roomData);
+        } catch (error) {
+            throw new Error("Error creating room: " + error.message);
+        }
     }
-
-    async editRoom(id, data) {
-        return await this.roomRepository.editRoom(id, data);
+    async updateRoom(id, data) {
+        return await this.roomRepository.updateRoom(id, data);
     }
 
     async deleteRoom(id) {

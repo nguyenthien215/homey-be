@@ -1,5 +1,6 @@
 // src/repositories/category.repository.js
 import { Op } from "sequelize";
+import { v4 as uuidv4 } from "uuid";
 import db from "../database/models/index.js";
 
 class CategoryRepository {
@@ -78,9 +79,20 @@ class CategoryRepository {
 
   async createCategory(data) {
     try {
-      return await this.model.create(data);
+      const id = uuidv4();
+
+      const newCategory = await this.model.create({
+        id,
+        name: data.name,
+        image_url: data.image_url || [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      return newCategory;
     } catch (error) {
-      throw new Error("Error creating product: " + error.message);
+      console.error("❌ CategoryRepository.create:", error);
+      throw new Error("Error creating category in repository: " + error.message);
     }
   }
 
@@ -90,6 +102,7 @@ class CategoryRepository {
       if (!category) throw new Error("Category not found");
       return await category.update({
         name: data.name,
+        image_url: data.image_url || category.image_url,
       });
     } catch (error) {
       throw new Error("Error updating category: " + error.message);

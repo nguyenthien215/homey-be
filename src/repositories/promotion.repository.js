@@ -14,37 +14,30 @@ class PromotionRepository {
                 page = 1,
                 pageSize = 5,
                 search = "",
-                // sortField = "createdAt",
-                // sortOrder = "DESC",
             } = req.query;
 
             const limit = Math.max(parseInt(pageSize), 1);
             const offset = (Math.max(parseInt(page), 1) - 1) * limit;
 
-            // Đếm tổng số user thỏa điều kiện search
-            const count = await this.model.count({
-                where: {
-                    code: {
-                        [Op.like]: `%${search}%`,
-                    },
-                },
-            });
+            // Điều kiện where cho search
+            const whereCondition = search ? {
+                [Op.or]: [
+                    { code: { [Op.like]: `%${search}%` } },
+                    { discount_type: { [Op.like]: `%${search}%` } },
+                    { status: { [Op.like]: `%${search}%` } }
+                ]
+            } : {};
 
-            // Lấy danh sách user
-            const rows = await db.sequelize.query(
-                `
-          SELECT id, code, discount_type, discount_value, start_date, end_date, status, createdAt, updatedAt
-          FROM promotions
-                `,
-                {
-                    bind: {
-                        limit,
-                        offset,
-                        search: `%${search}%`,
-                    },
-                    type: QueryTypes.SELECT,
-                }
-            );
+            // Đếm tổng số promotion thỏa điều kiện search
+            const count = await this.model.count({ where: whereCondition });
+
+            // Lấy danh sách promotion với pagination
+            const rows = await this.model.findAll({
+                where: whereCondition,
+                order: [["createdAt", "DESC"]],
+                limit,
+                offset,
+            });
 
             return {
                 data: rows,
@@ -60,97 +53,48 @@ class PromotionRepository {
         }
     }
 
-    //   async getUserById(id, includeRefreshToken = false) {
-    //     try {
-    //       return await (includeRefreshToken
-    //         ? this.model.findByPk(id, { include: db.RefreshToken })
-    //         : db.sequelize.query("SELECT * from users WHERE id = $id", {
-    //             bind: { id },
-    //             type: QueryTypes.SELECT,
-    //           }));
-    //     } catch (error) {
-    //       throw new Error("Error fetching user: " + error.message);
-    //     }
-    //   }
+    async getPromotionById(id) {
+        const promotion = await this.model.findByPk(id);
+        if (!promotion) throw new Error("Promotion not found");
+        return promotion;
+    }
 
-    // 🔹 Tạo khuyến mãi mới
     async createPromotion(data) {
-        try {
-            const id = uuidv4();
-            const {
-                code,
-                discount_type,
-                discount_value,
-                start_date,
-                end_date,
-                status,
-            } = data;
-
-            await db.sequelize.query(
-                `
-            INSERT INTO promotions (id, code, discount_type, discount_value, start_date, end_date, status, createdAt, updatedAt)
-            VALUES (:id, :code, :discount_type, :discount_value, :start_date, :end_date, :status, NOW(), NOW())
-            `,
-                {
-                    replacements: {
-                        id,
-                        code,
-                        discount_type,
-                        discount_value,
-                        start_date,
-                        end_date,
-                        status,
-                    },
-                    type: QueryTypes.INSERT,
-                }
-            );
-
-            return { id };
-        } catch (error) {
-            throw new Error("Error creating promotion: " + error.message);
-        }
+        const id = uuidv4();
+        const newPromotion = await this.model.create({
+            id,
+            code: data.code,
+            discount_type: data.discount_type,
+            discount_value: data.discount_value,
+            start_date: data.start_date,
+            end_date: data.end_date,
+            status: data.status || "active",
+        });
+        return newPromotion;
     }
 
 
-    // 🔹 Cập nhật khuyến mãi
     async updatePromotion(id, data) {
-        try {
-            const fields = [];
-            const replacements = { id };
+        const promotion = await this.model.findByPk(id);
+        if (!promotion) throw new Error("Promotion not found");
 
-            for (const [key, value] of Object.entries(data)) {
-                if (value !== undefined) {
-                    fields.push(`${key} = :${key}`);
-                    replacements[key] = value;
-                }
-            }
+        const updated = await promotion.update({
+            code: data.code ?? promotion.code,
+            discount_type: data.discount_type ?? promotion.discount_type,
+            discount_value: data.discount_value ?? promotion.discount_value,
+            start_date: data.start_date ?? promotion.start_date,
+            end_date: data.end_date ?? promotion.end_date,
+            status: data.status ?? promotion.status,
+        });
 
-            if (fields.length === 0) throw new Error("No data provided for update");
-
-            const query = `
-                UPDATE promotions
-                SET ${fields.join(", ")}, updatedAt = NOW()
-                WHERE id = :id
-            `;
-
-            await db.sequelize.query(query, { replacements, type: QueryTypes.UPDATE });
-            return { message: "Promotion updated successfully" };
-        } catch (error) {
-            throw new Error("Error updating promotion: " + error.message);
-        }
+        return updated;
     }
 
-    // 🔹 Xóa khuyến mãi
     async deletePromotion(id) {
-        try {
-            await db.sequelize.query(`DELETE FROM promotions WHERE id = :id`, {
-                replacements: { id },
-                type: QueryTypes.DELETE,
-            });
-            return { message: "Promotion deleted successfully" };
-        } catch (error) {
-            throw new Error("Error deleting promotion: " + error.message);
-        }
+        const promotion = await this.model.findByPk(id);
+        if (!promotion) throw new Error("Promotion not found");
+        await this.model.destroy({ where: { id } });
+        return true;
     }
 }
 
