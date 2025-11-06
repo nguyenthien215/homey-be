@@ -1,5 +1,10 @@
 {
   "development": {
+    "username": "avnadmin",
+    "password": "AVNS_jz8Mc0Jpqu1-isCn30B",
+    "database": "defaultdb",
+    "host": "mysql-1561d5a8-nguyenthien22112005-ff3e.d.aivencloud.com",
+    "port": "27401",
     "username": "root",
     "password": "nguyenthien22112005",
     "database": "homey_db",
